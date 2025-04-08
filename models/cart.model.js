@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const { type } = require('os');
+import  mongoose  from "mongoose"
+
 const Schema = mongoose.Schema;
 
 const cartSchema = new Schema({
@@ -27,5 +27,4 @@ const cartSchema = new Schema({
 		default: false
 	}	
 });
-
-module.exports = mongoose.model('Cart', cartSchema);
+export const Cart= mongoose.model("Cart",cartSchema)

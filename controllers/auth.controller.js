@@ -4,8 +4,9 @@ import { sendVerificationEmail,sendPasswordResetEmail,sendResetSuccessEmail } fr
 import { generateTokenAndSetCookie } from "../utils/generatetokenandsetcookie.js"
 import crypto from "crypto"
 const auth={
+    
     signup:async(req,res)=>{
-        const {firstName,lastName,gender,country,state,city,maritalStatus,socioProfessionalStatus,age,email,password}=req.body
+        const {firstName,lastName,gender,country,state,city,maritalStatus,socioProfessionalStatus,age,email,password,rib}=req.body
         try{
             if (!email || !password|| !firstName || !lastName|| !gender || !country|| !state || !city|| !maritalStatus || !socioProfessionalStatus|| !age ){
                 throw new Error ("all fields are required");
@@ -96,15 +97,15 @@ const auth={
             if (!user){
                 return res.status(400).json ({success:false ,message: "Invalide credentials"})
             }
-            if(!user.isverified){
+            if(!user.isVerified){
                 return res.status(400).json ({success:false ,message: "user not verified"})
             }
             const ispasswordvalid = await bcryptjs.compare (password,user.password)
             if(!ispasswordvalid){
                 return res.status(400).json ({success:false,message:"That's not the right password"})
             }
-            generateTokenAndSetCookie(res,user._id)
-
+            const token=generateTokenAndSetCookie(res,user._id)
+            
             user.lastLogin=new Date();
 
             await user.save ();
@@ -112,6 +113,7 @@ const auth={
             res.status(200).json({
                 success: true,
                 message: "Email verified successfully",
+                token,
                 user: {
                     ...user._doc,
                     password: undefined,
@@ -131,7 +133,7 @@ const auth={
             if (!user){
                 return res.status(400).json({ success:false , message: " user not found " })
             }
-
+            
             const resettoke=crypto.randomBytes(20).toString("hex")
             const resetTokenExpiresAt = Date.now() + 2 * 60 * 60 * 1000
             user.resetPasswordtoken=resettoke;

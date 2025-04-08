@@ -1,10 +1,9 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+import  mongoose  from "mongoose"
 
+const Schema = mongoose.Schema;
 const bankingAccountSchema = new Schema({
     user: { type: Schema.Types.ObjectId,
 		ref: 'User', 
-		required: true 
 	},
     accountNumber: { 
 		type: String,
@@ -20,5 +19,5 @@ const bankingAccountSchema = new Schema({
 		 ref: 'Cart' 
 		}]
 });
+export const BankingAccount= mongoose.model("BankingAccount",bankingAccountSchema)
 
-module.exports = mongoose.model('BankingAccount', bankingAccountSchema);

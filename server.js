@@ -5,17 +5,29 @@ import cookieParser from "cookie-parser";
 import authroutes from "./routes/auth.routes.js"
 import cors from "cors"
 
-
 const app = express()
 dotenv.config();
+
+// Middleware setup
 app.use(express.json({ limit: "10mb" }));
-app.use(cookieParser()); 
-app.use(cors({ origin: "http://localhost:8081", credentials: true }));
-app.use("/api/authroutes",authroutes)
+app.use(cookieParser());
 
-app.listen(  process.env.port,()  =>  {
-    connectdb();
-    console.log("server is runnig on port", process.env.port);
+// CORS configuration - allows all origins
+app.use(cors({
+  origin: "*", // or use '*' to allow all origins
+  credentials: true, // important for cookies/sessions
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
+
+// Handle preflight requests
+app.options('*', cors());
+
+// Routes
+app.use("/api/authroutes", authroutes);
+
+// Start server
+app.listen(process.env.port, () => {
+  connectdb();
+  console.log("Server is running on port", process.env.port);
 });
-
-

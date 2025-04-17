@@ -1,12 +1,32 @@
 
 import { BankingAccount } from "../models/Account.model.js";
 import { User } from "../models/user.model.js";
+import { AccountType } from '../models/AccountType.js';
 
 const accountController = {
+    getAccountTypes: async (req, res) => {
+        try {
+          const accountTypes = await AccountType.find();
+          res.status(200).json(accountTypes);
+        } catch (error) {
+          res.status(500).json({ error: error.message });
+        }
+      },
+    
+    getAccountTypeById: async (req, res) => {
+        try {
+          const accountType = await AccountType.findById(req.params.id);
+          if (!accountType) {
+            return res.status(404).json({ message: 'Account type not found' });
+          }
+          res.json(accountType);
+        } catch (error) {
+          res.status(500).json({ error: error.message });
+        }
+      },
     findrrib: async (req, res) => {
         const { rib } = req.body;
         
-        // Validate input
         if (!rib) {
             return res.status(400).json({ 
                 success: false, 

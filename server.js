@@ -6,6 +6,7 @@ import authroutes from "./routes/auth.routes.js"
 import cartroutes from "./routes/cart.routes.js"
 import accountroutes from "./routes/account.routes.js"
 import creditroutes from "./routes/credit.routes.js"
+import notificationRoutes from "./routes/notification.routes.js";
 import cors from "cors"
 
 const app = express()
@@ -31,6 +32,7 @@ app.use("/api/authroutes", authroutes);
 app.use("/api/cartroutes", cartroutes);
 app.use("/api/accountroutes", accountroutes);
 app.use("/api/creditroutes", creditroutes);
+app.use('/api/notifications', notificationRoutes);
 // Start server
 app.listen(process.env.port, () => {
   connectdb();

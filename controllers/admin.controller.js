@@ -1,6 +1,7 @@
-import { CardType } from "../models/CardType.js";
-import { AccountType } from "../models/AccountType.js";
-import { CreditType } from "../models/CreditType.js";
+import { CardType } from "../models/type/CardType.js";
+import { AccountType } from "../models/type/AccountType.js";
+import { CreditType } from "../models/type/CreditType.js";
+import { CardApplication } from "../models/applications/CardApplication.js";
 import cloudinary from "cloudinary";
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -9,6 +10,7 @@ cloudinary.config({
 });
 
 const adminroutes = {
+  //cart type
   createCardType: async (req, res) => {
     try {
       const {
@@ -100,6 +102,29 @@ const adminroutes = {
       });
     }
   },
+  // Delete card type
+  deleteCardType: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deletedCard = await CardType.findByIdAndDelete(id);
+      if (!deletedCard) {
+        return res.status(404).json({ message: "Card type not found" });
+      }
+      
+      // Delete image from Cloudinary if it exists
+      if (deletedCard.imageUrl) {
+        const publicId = deletedCard.imageUrl.split('/').pop().split('.')[0];
+        await cloudinary.uploader.destroy(`products/${publicId}`);
+      }
+      
+      res.status(200).json({ message: "Card type deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
+
+  //account
   createAccountType: async (req, res) => {
     try {
       const {
@@ -194,6 +219,9 @@ const adminroutes = {
       res.status(500).json({ error: error.message });
     }
   },
+
+
+  //credit
   createCreditType: async (req, res) => {
     try {
       const {
@@ -290,27 +318,9 @@ const adminroutes = {
       res.status(500).json({ error: error.message });
     }
   },
+
   
-  // Delete card type
-  deleteCardType: async (req, res) => {
-    try {
-      const { id } = req.params;
-      const deletedCard = await CardType.findByIdAndDelete(id);
-      if (!deletedCard) {
-        return res.status(404).json({ message: "Card type not found" });
-      }
-      
-      // Delete image from Cloudinary if it exists
-      if (deletedCard.imageUrl) {
-        const publicId = deletedCard.imageUrl.split('/').pop().split('.')[0];
-        await cloudinary.uploader.destroy(`products/${publicId}`);
-      }
-      
-      res.status(200).json({ message: "Card type deleted successfully" });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
+  
 };
 
 export default adminroutes;

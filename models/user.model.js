@@ -1,28 +1,30 @@
+// models/user.model.js (assuming your User model is here)
+import mongoose from "mongoose";
 
-import  mongoose  from "mongoose"
-
-const Schema = mongoose.Schema;
-const userSchema = new Schema({
+const userSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
-    age: { type: Number, required: true },
-    gender: { type: String, required: true },
-    country: { type: String, required: true },
-    state: { type: String, required: true },
-    city: { type: String, required: true },
-    maritalStatus: { type: String, required: true },
-    socioProfessionalStatus: { type: String, required: true },
-    lastLogin: { type: Date, default: Date.now },
+    gender: { type: String },
+    country: { type: String },
+    state: { type: String },
+    city: { type: String },
+    maritalStatus: { type: String },
+    socioProfessionalStatus: { type: String },
+    age: { type: Number },
     isVerified: { type: Boolean, default: false },
-    isadmin: { type: Boolean, default: false },
-    resetPasswordToken: String,
-    resetPasswordExpiresAt: Date,
-    verificationToken: String,
-    verificationTokenExpiresAt: Date,
-    carts: [{ type: Schema.Types.ObjectId, ref: 'Cart' }],
-    bankingAccounts: [{ type: Schema.Types.ObjectId, ref: 'BankingAccount' }]
-});
+    verificationToken: { type: String },
+    verificationTokenExpiresAt: { type: Date },
+    resetPasswordtoken: { type: String },
+    resetPasswordexpiresat: { type: Date },
+    lastLogin: { type: Date, default: Date.now },
+    // New field for push notification tokens
+    expoPushTokens: [{
+        token: { type: String, unique: true, sparse: true }, // unique and sparse to allow nulls and prevent duplicates
+        deviceId: { type: String }, // Optional: to identify the device
+        createdAt: { type: Date, default: Date.now }
+    }]
+}, { timestamps: true });
 
-export const User= mongoose.model("User",userSchema)
+export const User = mongoose.model('User', userSchema);

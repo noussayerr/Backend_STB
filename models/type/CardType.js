@@ -23,6 +23,10 @@ const cardTypeSchema = new Schema({
       icon: String,
     },
   ],
+   minimumBalance: {
+    type: Number,
+    
+  },
   createdAt: { type: Date, default: Date.now },
 });
 

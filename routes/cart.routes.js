@@ -16,5 +16,12 @@ router.delete('/cardtypes/:id', adminroutes.deleteCardType);
 router.post("/submitapplication", verifyToken, cardController.submitApplication);
 router.get("/allapplications", cardController.allapplication);
 router.put("/processapplication/:applicationId", cardController.processApplication);
+router.get("/getoneapplication/:id", verifyToken, cardController.getuserapplication);
+
+// user cards
+router.get("/usercards", verifyToken, cardController.getUserCards);
+router.get("/getonecard/:id", verifyToken, cardController.getonecard);
+router.put("/toggleblock/:id", verifyToken, cardController.toggleCardBlock);
+router.put("/changepin", verifyToken, cardController.changepin);
 
 export default router;

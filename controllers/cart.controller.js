@@ -85,10 +85,13 @@ const cardController = {
   },
   // Get user's cards
   getUserCards: async (req, res) => {
+    const userId = req.user._id;
+    console.log(userId)
     try {
-      const cards = await UserCard.find({ user: req.user._id })
+      const cards = await UserCard.find({ user: userId })
         .populate('cardType');
       res.json(cards);
+      console.log(cards)
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -105,6 +108,47 @@ const cardController = {
       res.status(400).json({ error: error.message });
     }
   },
+  changepin: async (req, res) => {
+    try {
+      const { cardId, newPin } = req.body;
+      const card = await UserCard.findById(cardId);
+      if (!card) {
+        return res.status(404).json({ message: 'Card not found' });
+      }
+      card.pin = newPin;
+      await card.save();
+      res.status(200).json({ message: 'PIN changed successfully', card });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+  getonecard: async (req, res) => {
+    try{
+      const card = await UserCard.findById(req.params.id)
+        .populate('cardType')
+        .populate('bankingAccount');
+      if (!card) {
+        return res.status(404).json({ message: 'Card not found' });
+      }
+      res.json(card);
+    }
+    catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+  getuserapplication: async (req, res) => {
+    try {
+      const userId = req.user._id; // Assuming you have user authentication middleware
+      const applications = await CardApplication.find({ user: userId })
+        .populate('cardType')
+        .populate('bankingAccount');
+      res.status(200).json(applications);
+    }
+    catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
   allapplication:async(req,res)=>{
     
     try {
@@ -235,5 +279,7 @@ const cardController = {
             });
         }
     }
+
+
 };
 export default cardController

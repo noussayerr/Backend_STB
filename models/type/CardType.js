@@ -13,20 +13,12 @@ const cardTypeSchema = new Schema({
     withdrawal: { type: Number, required: true },
     replacement: { type: Number, required: true },
   },
-  requirements: {
-    minIncome: Number,
-    employmentStatus: [String],
-  },
-  benefits: [
-    {
+  requirements: {minIncome: Number,employmentStatus: [String],},
+  benefits: [{
       text: String,
       icon: String,
-    },
-  ],
-   minimumBalance: {
-    type: Number,
-    
-  },
+    },],
+   minimumBalance: {type: Number,},
   createdAt: { type: Date, default: Date.now },
 });
 

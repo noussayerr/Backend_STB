@@ -116,6 +116,24 @@ const accountController = {
           });
         }},
 
+        getuseraccounts: async (req, res) => {
+    try {
+        const accounts = await BankingAccount.find({ user: req.user._id })
+            .populate('accountType')
+            .populate('cards');
+            
+        res.status(200).json({
+            success: true,
+            data: accounts
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch accounts',
+            error: error.message
+        });
+    }
+},
 
         submitAccountApplication : async (req, res) => {
         try {
@@ -240,40 +258,38 @@ const accountController = {
 
 
     createAccountFromApplication: async (application) => {
-        try {
-            const { user, accountType, accountInfo, personalInfo } = application;
-            
-            // Generate account number
-            const accountNumber = accountController.generateAccountNumber(); 
-            
-            const newAccount = new BankingAccount({
-                user,
-                accountType,
-                accountNumber,
-                balance: accountInfo.initialDeposit,
-                status: "active",
-                debitCard: accountInfo.wantsDebitCard,
-                onlineBanking: accountInfo.wantsOnlineBanking,
-                accountHolder: {
-                    firstName: personalInfo.firstName,
-                    lastName: personalInfo.lastName,
-                    email: personalInfo.email
-                }
-            });
-            
-            await newAccount.save();
-            
-            // Update user's accounts list
-            await User.findByIdAndUpdate(user, {
-                $push: { bankingAccounts: newAccount._id }
-            });
-            
-            return newAccount;
-        } catch (error) {
-            console.error("Error creating account from application:", error);
-            throw error;
-        }
-    },
+    try {
+        const { user, accountType, accountInfo, personalInfo } = application;
+        
+        // Generate account number
+        const accountNumber = accountController.generateAccountNumber(); 
+        
+        const newAccount = new BankingAccount({
+            user,
+            accountType, // This now references the AccountType
+            accountNumber,
+            balance: accountInfo.initialDeposit,
+            status: "active",
+            accountHolder: {
+                firstName: personalInfo.firstName,
+                lastName: personalInfo.lastName,
+                email: personalInfo.email
+            }
+        });
+        
+        await newAccount.save();
+        
+        // Update user's accounts list
+        await User.findByIdAndUpdate(user, {
+            $push: { bankingAccounts: newAccount._id }
+        });
+        
+        return newAccount;
+    } catch (error) {
+        console.error("Error creating account from application:", error);
+        throw error;
+    }
+},
 
     generateAccountNumber: () => {
         return Math.floor(1000000000 + Math.random() * 9000000000).toString();

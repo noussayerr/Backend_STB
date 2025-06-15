@@ -135,6 +135,7 @@ const accountController = {
     }
 },
 
+
         submitAccountApplication : async (req, res) => {
         try {
           const {

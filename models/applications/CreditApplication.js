@@ -6,6 +6,7 @@ const creditApplicationSchema = new Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   creditType: { type: mongoose.Schema.Types.ObjectId, ref: 'CreditType', required: true },
   status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
+  adminNote: { type: String },
   
   // Personal Information
   personalInfo: {
@@ -23,10 +24,11 @@ const creditApplicationSchema = new Schema({
   // Credit Information
   creditInfo: {
     amountRequested: { type: Number, required: true },
-    duration: { type: Number, required: true }, // in months
+    duration: { type: Number, required: true },
     purpose: { type: String, required: true },
-    rib: { type: String, required: true }, // Bank account details
-    bankStatement: { type: String } // URL to uploaded PDF
+    rib: { type: String, required: true },
+    monthlyPayment: { type: Number, required: true },
+    interestRate: { type: Number, required: true }
   },
   
   // Financial Information

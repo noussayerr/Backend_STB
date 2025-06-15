@@ -17,7 +17,7 @@ router.get('/allapplications', accountController.allapplications);
 router.put('/applications/:id/status', accountController.updateApplicationStatus);
 
 // Account Routes
-router.get('/myaccounts', verifyToken, accountController.getuseraccounts); // New route for user accounts
+router.get('/myaccounts', verifyToken, accountController.getuseraccounts); 
 router.post('/findrib', verifyToken, accountController.findrrib);
 
 export default router;

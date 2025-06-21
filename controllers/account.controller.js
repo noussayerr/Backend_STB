@@ -282,8 +282,9 @@ const accountController = {
         
         // Update user's accounts list
         await User.findByIdAndUpdate(user, {
-            $push: { bankingAccounts: newAccount._id }
-        });
+            $push: { bankingAccounts: newAccount._id },
+            $setOnInsert: { bankingAccounts: [] } // Initialize if doesn't exist
+        }, { upsert: true });
         
         return newAccount;
     } catch (error) {

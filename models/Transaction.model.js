@@ -6,12 +6,10 @@ const transactionSchema = new Schema({
   senderAccount: { 
     type: Schema.Types.ObjectId, 
     ref: 'BankingAccount', 
-    required: true 
   },
   recipientAccount: { 
     type: Schema.Types.ObjectId, 
     ref: 'BankingAccount', 
-    required: true 
   },
   amount: { 
     type: Number,
@@ -27,6 +25,9 @@ const transactionSchema = new Schema({
     type: String,
     enum: ['pending', 'completed', 'failed'],
     default: 'pending'
+  },
+  userbalance: {
+    type: Number,
   },
   description: String,
   reference: String

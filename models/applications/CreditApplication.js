@@ -6,18 +6,22 @@ const creditApplicationSchema = new Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   creditType: { type: mongoose.Schema.Types.ObjectId, ref: 'CreditType', required: true },
   status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
-  adminNote: { type: String },
   
+  bankingAccount: { 
+    type: Schema.Types.ObjectId,  
+    ref: 'BankingAccount',    
+    required: true 
+  },
   // Personal Information
   personalInfo: {
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     email: { type: String, required: true },
-    phone: { type: String, required: true },
-    address: { type: String, required: true },
-    city: { type: String, required: true },
+    phone: { type: String },
+    address: { type: String },
+    city: { type: String },
     postalCode: { type: String },
-    dateOfBirth: { type: Date, required: true },
+    dateOfBirth: { type: Date },
     idNumber: { type: String, required: true }
   },
   
@@ -42,7 +46,8 @@ const creditApplicationSchema = new Schema({
   
   // System Info
   createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
+  updatedAt: { type: Date, default: Date.now },
+  adminNote: { type: String }
 });
 
 export const CreditApplication = mongoose.model('CreditApplication', creditApplicationSchema);

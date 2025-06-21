@@ -20,6 +20,8 @@ router.get("/applications/:id", creditController.getApplicationById);
 router.put("/applications/:id/status", creditController.updateApplicationStatus);
 
 // Credit Accounts
+router.get('/usercredits', verifyToken, creditController.getUserCreditsWithDetails);
+router.get('/credits/:id', verifyToken, creditController.getCreditDetails);
 router.get("/mycredits", verifyToken, creditController.getUserCredits);
 
 export default router;

@@ -22,4 +22,4 @@ const cardTypeSchema = new Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-export const CardType = mongoose.model("CardType", cardTypeSchema);
+export const CardType = mongoose.model("CreditType ", cardTypeSchema);

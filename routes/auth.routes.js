@@ -13,4 +13,10 @@ router.post("/login",auth.login)
 router.post("/logout",auth.logout)
 router.post("/forgotpassword",auth.forgotpassword)
 router.post("/resetpassword/:token",auth.resetpassword)
+
+router.get("/applications", verifyToken, auth.getUserApplications);
+router.get("/applications/:type/:id", verifyToken, auth.getApplicationDetails);
+router.put("/profile", verifyToken, auth.updateProfile);
+
+
 export default router

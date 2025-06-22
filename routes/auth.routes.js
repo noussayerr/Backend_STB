@@ -2,7 +2,9 @@ import express from "express";
 import auth from "../controllers/auth.controller.js"
 import { verifyToken } from "../middleware/verifytoken.js";
 import accountcontroller from "../controllers/account.controller.js";
+import dashboardController from '../controllers/dashboardController.js';
 const router =express.Router();
+router.get('/dashboard', dashboardController.getDashboardData);
 router.get("/check-auth", verifyToken, auth.checkAuth);
 router.post("/ribcheck",accountcontroller.findrrib)
 router.post("/signup",auth.signup)

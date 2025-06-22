@@ -3,6 +3,11 @@ import bcryptjs from 'bcryptjs'
 import { sendVerificationEmail,sendPasswordResetEmail,sendResetSuccessEmail } from "../mails/emails.js"
 import { generateTokenAndSetCookie } from "../utils/generatetokenandsetcookie.js"
 import crypto from "crypto"
+import { AccountApplication } from "../models/applications/AccountApplication.js";
+import {CardApplication} from '../models/applications/CardApplication.js'
+import { Reclamation } from "../models/reclamation.model.js";
+import { CreditApplication } from "../models/applications/CreditApplication.js";
+
 const auth={
     
     signup:async(req,res)=>{

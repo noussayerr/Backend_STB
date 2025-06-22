@@ -1,28 +1,14 @@
 import mongoose from "mongoose";
-
 const Schema = mongoose.Schema;
-
 const applicationSchema = new Schema({
-  user: { 
-    type: Schema.Types.ObjectId, 
-    ref: 'User', 
-    required: true 
-  },
-  bankingAccount: { 
-    type: Schema.Types.ObjectId,  
-    ref: 'BankingAccount',    
-    required: true 
-  },
-  cardType: { 
-    type: Schema.Types.ObjectId, 
-    ref: 'CardType', 
-    required: true 
-  },
-  status: { 
-    type: String, 
+  user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  bankingAccount: { type: Schema.Types.ObjectId,  
+    ref: 'BankingAccount',required: true },
+  cardType: { type: Schema.Types.ObjectId, 
+    ref: 'CardType', required: true },
+  status: { type: String, 
     enum: ['pending', 'approved', 'rejected'], 
-    default: 'pending' 
-  },
+    default: 'pending' },
   personalInfo: {
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },

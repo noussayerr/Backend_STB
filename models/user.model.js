@@ -19,7 +19,6 @@ const userSchema = new mongoose.Schema({
     resetPasswordexpiresat: { type: Date },
     lastLogin: { type: Date, default: Date.now },
     pack: { type: String, enum: ['free', 'premium'], default: 'free' },
-
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
     bankingAccount: { type: mongoose.Schema.Types.ObjectId, ref: 'BankingAccount' }, 
     cards: [{ type: mongoose.Schema.Types.ObjectId, ref: 'UserCard' }], 

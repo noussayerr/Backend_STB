@@ -6,6 +6,7 @@ import { BankingAccount } from '../models/Account.model.js';
 import { User } from '../models/user.model.js';
 import { Transaction } from '../models/Transaction.model.js';
 import notificationController from './notificationController.js';
+import { sendCardApprovalEmail,sendCardRejectionEmail } from "../mails/emails.js";
 import {generateCardNumber,  generateRandomNumber } from '../utils/generatenumber.js';
 const cardController = {
 
@@ -28,6 +29,7 @@ const cardController = {
   
   // User card application
   submitApplication: async (req, res) => {
+
     try {
       const {
         firstName,
@@ -89,7 +91,9 @@ const cardController = {
     console.log(userId)
     try {
       const cards = await UserCard.find({ user: userId })
-        .populate('cardType');
+        .populate('cardType')
+        .populate('bankingAccount');
+        
       res.json(cards);
       console.log(cards)
     } catch (error) {
@@ -161,124 +165,141 @@ const cardController = {
   
   
   processApplication: async (req, res) => {
-        try {
-            const { applicationId } = req.params;
-            const { status, adminNotes } = req.body;
+    try {
+        const { applicationId } = req.params;
+        const { status, adminNotes } = req.body;
 
-            const application = await CardApplication.findById(applicationId)
-                .populate('user')
-                .populate('bankingAccount');
+        const application = await CardApplication.findById(applicationId)
+            .populate('user')
+            .populate('bankingAccount')
+            .populate('cardType');
 
-            if (!application) {
-                return res.status(404).json({ message: 'Application not found' });
-            }
+        if (!application) {
+            return res.status(404).json({ message: 'Application not found' });
+        }
 
-            if (application.status !== 'pending') {
-                return res.status(400).json({ message: 'Application has already been processed' });
-            }
+        if (application.status !== 'pending') {
+            return res.status(400).json({ message: 'Application has already been processed' });
+        }
 
-            application.status = status;
-            application.adminNotes = adminNotes;
-            application.processedAt = new Date();
+        application.status = status;
+        application.adminNotes = adminNotes;
+        application.processedAt = new Date();
 
-            const cardType = await CardType.findById(application.cardType);
+        if (status === 'approved') {
+            const cardNumber = generateCardNumber();
+            const expiryDate = new Date();
+            expiryDate.setFullYear(expiryDate.getFullYear() + 3);
+            const cvv = generateRandomNumber(3);
+            const pin = generateRandomNumber(6);
 
-            if (status === 'approved') {
-                const cardNumber = generateCardNumber();
-                const expiryDate = new Date();
-                expiryDate.setFullYear(expiryDate.getFullYear() + 3);
-                const cvv = generateRandomNumber(3);
-                const pin = generateRandomNumber(4);
+            const newCard = new UserCard({
+                user: application.user._id,
+                bankingAccount: application.bankingAccount._id,
+                cardType: application.cardType._id,
+                cardNumber,
+                expiryDate,
+                cvv,
+                pin,
+                status: 'active',
+                currentBalance: 0, // Set to banking account balance
+                fees: {
+                    annual: application.cardType.fees.annual,
+                    withdrawal: application.cardType.fees.withdrawal,
+                    replacement: application.cardType.fees.replacement
+                }
+            });
+            
+            await newCard.save();
 
-                const newCard = new UserCard({
-                    user: application.user._id,
-                    bankingAccount: application.bankingAccount._id,
-                    cardType: application.cardType._id,
-                    cardNumber,
-                    expiryDate,
-                    cvv,
-                    pin,
-                    status: 'active',
-                    currentBalance: 0,
-                    fees: {
-                        annual: cardType.fees.annual,
-                        withdrawal: cardType.fees.withdrawal,
-                        replacement: cardType.fees.replacement
-                    }
-                });
-                await newCard.save();
-
-                await Promise.all([
-                    BankingAccount.findByIdAndUpdate(
-                        application.bankingAccount._id,
-                        { $push: { cards: newCard._id } }
-                    ),
-                    User.findByIdAndUpdate(
-                        application.user._id,
-                        { $push: { carts: newCard._id } } // Assuming 'carts' is the field for user cards
-                    )
-                ]);
-
-                const feeTransaction = new Transaction({
-                    user: application.user._id,
-                    bankingAccount: application.bankingAccount._id,
-                    amount: cardType.fees.annual,
-                    transactionType: 'fee',
-                    description: 'Annual card fee',
-                    status: 'completed'
-                });
-
-                await BankingAccount.findByIdAndUpdate(
+            // Update banking account balance with annual fee deduction
+            const updatedBalance = application.bankingAccount.balance - application.cardType.fees.annual;
+            
+            await Promise.all([
+                BankingAccount.findByIdAndUpdate(
                     application.bankingAccount._id,
-                    { $inc: { balance: -cardType.fees.annual } }
-                );
-                await feeTransaction.save();
-                await application.save();
-
-                // --- Send Notification for Approved Card ---
-                await notificationController.sendPushNotification(
+                    { 
+                        $push: { cards: newCard._id },
+                        $set: { balance: updatedBalance }
+                    }
+                ),
+                User.findByIdAndUpdate(
                     application.user._id,
-                    'Card Application Approved!',
-                    `Good news! Your ${cardType.name} card application has been approved. Your new card details are ready.`,
-                    { screen: 'View/pack', cardId: newCard._id.toString() } // Example data to navigate to card details
-                );
-                // ------------------------------------------
+                    { $push: { cards: newCard._id } } // Fixed typo from 'carts' to 'cards'
+                )
+            ]);
 
-                return res.status(200).json({
-                    message: 'Application approved and card created successfully',
-                    application,
-                    card: newCard
-                });
-            } else if (status === 'rejected') { // Handle rejection
-                await application.save();
-                // --- Send Notification for Rejected Card ---
-                await notificationController.sendPushNotification(
-                    application.user._id,
-                    'Card Application Rejected',
-                    `Your card application has been rejected. Admin notes: ${adminNotes || 'No specific reason provided.'}`,
-                    { screen: 'View/settings' } // Example data to navigate to settings or application history
-                );
-                // ------------------------------------------
-                return res.status(200).json({
-                    message: 'Application rejected successfully',
-                    application
-                });
-            }
+            const feeTransaction = new Transaction({
+                user: application.user._id,
+                bankingAccount: application.bankingAccount._id,
+                amount: application.cardType.fees.annual,
+                transactionType: 'fee',
+                description: 'Annual card fee',
+                status: 'completed'
+            });
 
+            await feeTransaction.save();
             await application.save();
-            res.status(200).json({
-                message: 'Application processed successfully',
+
+            // Send card approval email
+            await sendCardApprovalEmail(application.user.email, {
+                  cardType: application.cardType.name,
+                  pin: pin,
+                  cardNumber: cardNumber,
+                  expiryDate: expiryDate,
+                  annualFee: application.cardType.fees.annual
+              });
+
+            // Send push notification
+            {/*await notificationController.sendPushNotification(
+                application.user._id,
+                'Card Application Approved!',
+                `Good news! Your ${application.cardType.name} card application has been approved. Your new card details are ready.`,
+                { screen: 'View/pack', cardId: newCard._id.toString() }
+            );
+            */}
+
+
+
+            return res.status(200).json({
+                message: 'Application approved and card created successfully',
+                application,
+                card: newCard
+            });
+        } else if (status === 'rejected') {
+            await application.save();
+            await sendCardRejectionEmail(
+                application.user.email,
+                adminNotes || "No specific reason provided."
+            );
+
+
+            {/*await notificationController.sendPushNotification(
+                application.user._id,
+                'Card Application Rejected',
+                `Your card application has been rejected. Admin notes: ${adminNotes || 'No specific reason provided.'}`,
+                { screen: 'View/settings' }
+            ); */}
+            return res.status(200).json({
+                message: 'Application rejected successfully',
                 application
             });
-        } catch (error) {
-            console.error('Application processing error:', error);
-            res.status(500).json({
-                message: 'Error processing application',
-                error: error.message,
-                ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
-            });
         }
+
+        await application.save();
+        res.status(200).json({
+            message: 'Application processed successfully',
+            application
+        });
+    } catch (error) {
+        console.error('Application processing error:', error);
+        res.status(500).json({
+            message: 'Error processing application',
+            error: error.message,
+            ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
+        });
     }
+}
 
 
 };

@@ -2,6 +2,9 @@ import { transporter, Sender } from './nodemailer.config.js';
 import { VERIFICATION_EMAIL_TEMPLATE } from './emailtemplate.js';
 import { PASSWORD_RESET_REQUEST_TEMPLATE } from './emailtemplate.js';
 import { PASSWORD_RESET_SUCCESS_TEMPLATE } from './emailtemplate.js';
+import { CARD_APPROVAL_TEMPLATE } from './emailtemplate.js';
+import { CARD_REJECTION_TEMPLATE } from './emailtemplate.js';
+
 
 export const sendVerificationEmail = async (email, verificationToken) => {
     try {
@@ -18,6 +21,36 @@ export const sendVerificationEmail = async (email, verificationToken) => {
     }
 };
 
+
+export const sendCardApprovalEmail = async (email, cardDetails) => {
+    try {
+        await transporter.sendMail({
+            from: `${Sender.name} <${Sender.email}>`,
+            to: email,
+            subject: "Your Card Has Been Approved",
+            html: CARD_APPROVAL_TEMPLATE(cardDetails),
+        });
+        console.log("Card approval email sent successfully.");
+    } catch (error) {
+        console.error("Error sending card approval email:", error);
+        throw new Error("Error sending card approval email.");
+    }
+};
+
+export const sendCardRejectionEmail = async (email, adminNotes) => {
+    try {
+        await transporter.sendMail({
+            from: `${Sender.name} <${Sender.email}>`,
+            to: email,
+            subject: "Card Application Rejected",
+            html: CARD_REJECTION_TEMPLATE(adminNotes),
+        });
+        console.log("Card rejection email sent successfully.");
+    } catch (error) {
+        console.error("Error sending card rejection email:", error);
+        throw new Error("Error sending card rejection email.");
+    }
+};
 /*export const sendWelcomeEmail = async (email, name) => {
     try {
         await transporter.sendMail({
